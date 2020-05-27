@@ -17,3 +17,9 @@ class RegisterForm(FlaskForm):
 	username    = StringField  (u'Username'  , validators=[DataRequired()])
 	password    = PasswordField(u'Password'  , validators=[DataRequired()])
 	email       = StringField  (u'Email'     , validators=[DataRequired(), Email()])
+
+class AddMenuItemForm(FlaskForm):
+	name    = StringField  (u'Name'  , validators=[DataRequired()])
+	description    = StringField  (u'Description'  , validators=[DataRequired()])
+	startprice    = StringField  (u'StartPrice'  , validators=[DataRequired()])
+	endprice    = StringField  (u'EndPrice'  , validators=[DataRequired()])
