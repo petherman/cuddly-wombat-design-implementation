@@ -8,6 +8,7 @@ import os
 
 from flask            import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_login      import LoginManager
 from flask_bcrypt     import Bcrypt
 
@@ -20,6 +21,8 @@ app.config.from_object('app.configuration.Config')
 
 db = SQLAlchemy  (app) # flask-sqlalchemy
 bc = Bcrypt      (app) # flask-bcrypt
+migrate = Migrate(app, db) #flask migration object
+
 
 lm = LoginManager(   ) # flask-loginmanager
 lm.init_app(app) # init the login manager

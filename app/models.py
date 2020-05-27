@@ -23,11 +23,39 @@ class User(UserMixin, db.Model):
         return '<User %r - %s>' % (self.id) % (self.email)
 
     def save(self):
-
         # inject self into db session    
         db.session.add ( self )
-
         # commit change and save the object
         db.session.commit( )
-
         return self 
+
+class MenuItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True)
+    description = db.Column(db.String(250))
+    category = db.Column(db.String(64))
+    price = db.Column(db.String(5))
+
+    def __init__(self,name,description,category,price):
+        self.name = name
+        self.description = description
+        self.category = category
+        self.price = price
+    
+    def save(self):
+        db.session.add ( self )
+        # commit change and save the object
+        db.session.commit( )
+        return self 
+#class OrderLine(db.Model):
+#    id = db.Column(db.Integer, primary_key=True)
+#    order_number = db.relationship('Order', backref='order_number', lazy='dynamic')
+#    order_item = db.relationship('MenuItem', backref='order_item',lazy='dynamic')
+    
+#class Order(db.Model):
+#    id = db.Column(db.Integer, primary_key=True)
+#    table_number = db.Column(db.Integer)
+
+
+
+

@@ -14,8 +14,8 @@ from werkzeug.exceptions import HTTPException, NotFound, abort
 
 # App modules
 from app        import app, lm, db, bc
-from app.models import User
-from app.forms  import LoginForm, RegisterForm
+from app.models import User, MenuItem
+from app.forms  import LoginForm, RegisterForm, AddMenuItemForm
 
 # provide login manager with load_user callback
 @lm.user_loader
@@ -108,6 +108,50 @@ def login():
 
     return render_template('layouts/auth-default.html',
                             content=render_template( 'pages/login.html', form=form, msg=msg ) )
+
+
+# View Menu
+@app.route('/menu.html')
+def show_menu():
+    
+    menu = MenuItem.query.all()
+    for item in menu:
+        print(item.name)
+    return render_template('layouts/default.html',
+                            content=render_template( 'pages/menu.html', menu=menu) )
+
+# Add items to menu
+@app.route('/add_menu_item.html', methods=['GET', 'POST'])
+def add_menu_item():
+    # declare the Registration Form
+    form = AddMenuItemForm(request.form)
+
+    msg = None
+
+    if request.method == 'GET':
+        return render_template('layouts/default.html',
+                                content=render_template( 'pages/add_menu_item.html', form=form, msg=msg) )
+    # check if both http method is POST and form is valid on submit
+    if form.validate_on_submit():
+        # assign form data to variables
+        name = request.form.get('name', '', type=str)
+        description = request.form.get('description', '', type=str)
+        price_string = request.form.get('startprice', '', type=str) + '.' + request.form.get('endprice', '', type=str)[:2]
+        # filter User out of database through username
+                
+        checkItemName = MenuItem.query.filter_by(name=name).first()
+
+        if checkItemName:
+            msg = 'Error: Item ' + name + ' exists!'
+        else:
+            newItem = MenuItem(name=name,description=description,price=price_string,category='placeholder')
+            newItem.save()
+            msg = 'Item added: '+ name + ' with price of $' + price_string
+    else:
+        msg = 'Input error'
+
+    return render_template('layouts/default.html',
+                            content=render_template( 'pages/add_menu_item.html', form=form, msg=msg) )
 
 # App main route + generic routing
 @app.route('/', defaults={'path': 'index.html'})
