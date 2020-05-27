@@ -117,7 +117,6 @@ def show_menu():
     menu = MenuItem.query.all()
     for item in menu:
         print(item.name)
-    #drinks = sorted(Actress.query.filter(Actress.name.like(filter)), key=operator.attrgetter('name'))
     return render_template('layouts/default.html',
                             content=render_template( 'pages/menu.html', menu=menu) )
 
@@ -136,17 +135,18 @@ def add_menu_item():
     if form.validate_on_submit():
         # assign form data to variables
         name = request.form.get('name', '', type=str)
-        url = request.form.get('description', '', type=str)
-
+        description = request.form.get('description', '', type=str)
+        price_string = request.form.get('startprice', '', type=str) + '.' + request.form.get('endprice', '', type=str)[:2]
         # filter User out of database through username
+                
         checkItemName = MenuItem.query.filter_by(name=name).first()
 
         if checkItemName:
-            msg = 'Error: Actress exists!'
+            msg = 'Error: Item ' + name + ' exists!'
         else:
-            actress = Actress(name,url,headshot_url)
-            save_object(actress) #.save()
-            msg = 'Actress added: '+name
+            newItem = MenuItem(name=name,description=description,price=price_string,category='placeholder')
+            newItem.save()
+            msg = 'Item added: '+ name + ' with price of $' + price_string
     else:
         msg = 'Input error'
 

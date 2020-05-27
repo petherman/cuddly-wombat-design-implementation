@@ -41,7 +41,12 @@ class MenuItem(db.Model):
         self.description = description
         self.category = category
         self.price = price
-        
+    
+    def save(self):
+        db.session.add ( self )
+        # commit change and save the object
+        db.session.commit( )
+        return self 
 #class OrderLine(db.Model):
 #    id = db.Column(db.Integer, primary_key=True)
 #    order_number = db.relationship('Order', backref='order_number', lazy='dynamic')
