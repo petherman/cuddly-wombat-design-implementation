@@ -1,0 +1,101 @@
+
+<div class="main-content">
+  <!-- Top navbar -->
+  <nav class="navbar navbar-top navbar-expand-md navbar-dark" id="navbar-main">
+    <div class="container-fluid">
+      <!-- Brand -->
+      <h1 class="h4 mb-0 text-white text-uppercase d-none d-lg-inline-block" >Previous Orders</h1>
+      <!-- Form -->
+      <form class="navbar-search navbar-search-dark form-inline mr-3 d-none d-md-flex ml-lg-auto">
+        <div class="form-group mb-0">
+          <div class="input-group input-group-alternative">
+            <div class="input-group-prepend">
+              <span class="input-group-text"><i class="fas fa-search"></i></span>
+            </div>
+            <input class="form-control" placeholder="Search" type="text">
+          </div>
+        </div>
+      </form>
+      
+    </div>
+  </nav>
+  <!-- Header -->
+  <div class="header bg-gradient-primary pb-8 pt-5 pt-md-8">
+    <div class="container-fluid">
+      <div class="header-body">
+      </div>
+    </div>
+  </div>
+  <!-- Page content -->
+  <div class="container-fluid mt--7">
+    <!-- Dark table -->
+    <div class="row mt-5">
+      <div class="col">
+        <div class="card-header bg-transparent pb-5">
+          
+          <div class="text-muted text-center mt-2 mb-3">
+            
+            {% if msg %}
+            <span class="text-danger">{{ msg | safe }}</span>
+            {% endif %}
+            
+          </div>
+          
+        </div>
+        
+        
+        {% for order in orders %}
+        <div class="card bg-default shadow">
+          <div class="card-header bg-transparent border-0">
+            <div class="row">
+              <div class="col-sm"><h3 class="text-white mb-0">Order #{{ order.id }}</h3><h3 class="text-white mb-0">Total ${{ order.total }}</h3></div>
+              <div class="col-sm"></div>
+              <form class="bg-default" role="form" method="post" action="">
+                {{ form.csrf_token() }}
+                {{ form.order_id(value=order.id, class="form-control") }}
+                <div class="col-sm"><button type="submit" class="btn btn-primary">Reopen Order #{{ order.id }}</button></div>
+              </form>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table align-items-center table-dark table-flush">
+              <thead class="thead-dark">
+                <tr>
+                  <th scope="col">Item Name</th>
+                  <th scope="col">Price</th>
+                  <th scope="col"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in order.order_items %}
+                <tr>
+                  <th scope="row">
+                    <div class="media align-items-center">
+                      <a href="#" class="avatar rounded-circle mr-3">
+                        <img alt="Image placeholder" src="/static/assets/img/theme/bootstrap.jpg">
+                      </a>
+                      <div class="media-body">
+                        <span class="mb-0 text-sm">{{ item.name }}</span>
+                      </div>
+                    </div>
+                  </th>
+                  <td>
+                    {{ item.price }}
+                  </td>
+                  <td>
+                    
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    
+    {% include 'includes/footer.html' %}
+    
+  </div>
+</div>

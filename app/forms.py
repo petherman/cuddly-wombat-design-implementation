@@ -24,14 +24,8 @@ class AddMenuItemForm(FlaskForm):
 	startprice    = IntegerField  (u'StartPrice'  , validators=[DataRequired()])
 	endprice    = IntegerField  (u'EndPrice'  , validators=[DataRequired()])
 	
-#class MenuItemForm(FlaskForm):
-#	name = HiddenField()
-#	amount    = IntegerField  (u'StartPrice'  , validators=[DataRequired()])
-	
-#class OrderForm(FlaskForm):
-#	"""A form for one or more menu items"""
-#	items = FieldList(FormField(MenuItemForm), min_entries=1)
-#	order_number = IntegerField  (u'Order Number'  , validators=[DataRequired()])
+class HiddenOrderID(FlaskForm):
+	order_id = HiddenField()
 
 class BasicOrderForm(FlaskForm):
 	order_number = IntegerField  (u'Order Number', validators=[DataRequired()])

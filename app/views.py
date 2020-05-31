@@ -5,8 +5,8 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 # Python modules
-import os, logging 
-
+import os, logging
+from datetime import datetime
 # Flask modules
 from flask               import render_template, request, url_for, redirect, send_from_directory
 from flask_login         import login_user, logout_user, current_user, login_required
@@ -14,11 +14,12 @@ from werkzeug.exceptions import HTTPException, NotFound, abort
 
 # App modules
 from app        import app, lm, db, bc
-from app.models import User, MenuItem, Order
-from app.forms  import LoginForm, RegisterForm, AddMenuItemForm, BasicOrderForm
+from app.models import User, MenuItem, Order, OrderedItem
+from app.forms  import LoginForm, RegisterForm, AddMenuItemForm, BasicOrderForm, HiddenOrderID
 
 # Sqlalchemy
 from sqlalchemy import desc
+
 
 
 # provide login manager with load_user callback
@@ -124,6 +125,60 @@ def show_menu():
     return render_template('layouts/default.html',
                             content=render_template( 'pages/menu.html', menu=menu) )
 
+# View Current Orders
+@app.route('/current_orders.html', methods=['GET', 'POST'])
+def current_orders():
+    
+    orders = Order.query.filter_by(order_status=1)
+    
+    msg = None
+    
+    current_datetime = datetime.now()
+
+    form = HiddenOrderID(request.form)
+
+    
+    
+    if request.method == 'GET':
+        return render_template('layouts/default.html',
+                                content=render_template( 'pages/current_orders.html', orders=orders, msg=msg, form=form, current_datetime=current_datetime) )
+    if form.validate_on_submit():
+        order_id = request.form.get('order_id', '', type=int)
+        closed_order = Order.query.filter_by(id=order_id).first()
+        closed_order.close_order()
+        msg = 'Order #' + str(order_id) + ' closed'
+    else:
+        msg = 'Input error' 
+           
+    return render_template('layouts/default.html',
+                            content=render_template( 'pages/current_orders.html', orders=orders, msg=msg, form=form, current_datetime=current_datetime) )
+
+# View Previous Orders
+@app.route('/previous_orders.html', methods=['GET', 'POST'])
+def previous_orders():
+    
+    orders = Order.query.filter_by(order_status=0)
+    
+    msg = None
+    
+    form = HiddenOrderID(request.form)
+    
+    if request.method == 'GET':
+        return render_template('layouts/default.html',
+                                content=render_template( 'pages/previous_orders.html', orders=orders, msg=msg, form=form) )
+    if form.validate_on_submit():
+        order_id = request.form.get('order_id', '', type=int)
+        reopened_order = Order.query.filter_by(id=order_id).first()
+        reopened_order.reopen_order()
+        msg = 'Order #' + str(order_id) + ' reopened'
+    else:
+        msg = 'Input error' 
+           
+    return render_template('layouts/default.html',
+                            content=render_template( 'pages/previous_orders.html', orders=orders, msg=msg, form=form) )
+
+
+
 # Add items to menu
 @app.route('/add_menu_item.html', methods=['GET', 'POST'])
 def add_menu_item():
@@ -187,13 +242,15 @@ def create_order():
             checkOrderNumberExists = Order.query.filter_by(id=order_number).first()
             if checkOrderNumberExists:
                 # stores the test object into variable
-                current_order = checkOrderNumberExists
-                if current_order.order_status:
+                currentOrder = checkOrderNumberExists
+                if currentOrder.order_status:
                     # Adds item to order
                     for x in range(item_amount):
-                        current_order.order_items.append(item)
-                    current_order.calc_total()
-                    current_order.update()
+                        newItem = OrderedItem(item.name, item.description, item.category, item.price)
+                        newItem.save()
+                        currentOrder.order_items.append(newItem)
+                    currentOrder.calc_total()
+                    currentOrder.update()
                     
                     # True for order_status signals order is still open
                     msg = 'Added '+ str(item_amount) + 'x ' + item.name + ' to order #' + str(order_number)                    
@@ -206,8 +263,10 @@ def create_order():
                 newOrder.order_status = True
                 for x in range(item_amount):
                     # Adds item to order
-                    newOrder.order_items.append(item)
-                new_order.calc_total()    
+                    newItem = OrderedItem(item.name, item.description, item.category, item.price)
+                    newItem.save()
+                    newOrder.order_items.append(newItem)
+                newOrder.calc_total()    
                 newOrder.save()
 
                 tempOrder = Order.query.order_by(desc(Order.id)).first()
