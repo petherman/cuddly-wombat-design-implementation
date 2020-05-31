@@ -14,8 +14,12 @@ from werkzeug.exceptions import HTTPException, NotFound, abort
 
 # App modules
 from app        import app, lm, db, bc
-from app.models import User, MenuItem
-from app.forms  import LoginForm, RegisterForm, AddMenuItemForm
+from app.models import User, MenuItem, Order
+from app.forms  import LoginForm, RegisterForm, AddMenuItemForm, BasicOrderForm
+
+# Sqlalchemy
+from sqlalchemy import desc
+
 
 # provide login manager with load_user callback
 @lm.user_loader
@@ -123,7 +127,7 @@ def show_menu():
 # Add items to menu
 @app.route('/add_menu_item.html', methods=['GET', 'POST'])
 def add_menu_item():
-    # declare the Registration Form
+    # declare the menu item Form
     form = AddMenuItemForm(request.form)
 
     msg = None
@@ -152,6 +156,74 @@ def add_menu_item():
 
     return render_template('layouts/default.html',
                             content=render_template( 'pages/add_menu_item.html', form=form, msg=msg) )
+                            
+# Create orders
+@app.route('/create_order.html', methods=['GET', 'POST'])
+def create_order():
+    
+    # import menu items
+    menu_items = MenuItem.query.all()
+    # declare the menu item Form
+    form = BasicOrderForm(request.form)
+
+    msg = None
+
+    if request.method == 'GET':
+        return render_template('layouts/default.html',
+                                content=render_template( 'pages/create_order.html', form=form, msg=msg, menu=menu_items) )
+    # check if both http method is POST and form is valid on submit
+    if form.validate_on_submit():
+        # assign form data to variables
+        order_number = request.form.get('order_number', '', type=int)
+        table_number = request.form.get('table_number', '', type=int)
+        order_item_id = request.form.get('order_item_id', '', type=int)
+        item_amount = request.form.get('item_amount', '', type=int)
+        # filter User out of database through username
+        item = MenuItem.query.filter_by(id=order_item_id).first()
+        
+        # checks whether the menu item exists
+        if item:
+            # checks whether there is an existing order
+            checkOrderNumberExists = Order.query.filter_by(id=order_number).first()
+            if checkOrderNumberExists:
+                # stores the test object into variable
+                current_order = checkOrderNumberExists
+                if current_order.order_status:
+                    # Adds item to order
+                    for x in range(item_amount):
+                        current_order.order_items.append(item)
+                    current_order.calc_total()
+                    current_order.update()
+                    
+                    # True for order_status signals order is still open
+                    msg = 'Added '+ str(item_amount) + 'x ' + item.name + ' to order #' + str(order_number)                    
+                                
+                else:
+                    # If false the order is completed and cannot be updated
+                    msg = 'Order #' + str(order_number)+ ' has already been completed and the item cannot be added to the order.'
+            else:
+                newOrder = Order(table_number)
+                newOrder.order_status = True
+                for x in range(item_amount):
+                    # Adds item to order
+                    newOrder.order_items.append(item)
+                new_order.calc_total()    
+                newOrder.save()
+
+                tempOrder = Order.query.order_by(desc(Order.id)).first()
+                app.logger.info('%s newId', tempOrder.id)
+
+
+                msg = 'Order #' + str(order_number) + " doesn't exist but order #" + str(tempOrder.id) + ' created'
+        else:
+            msg = "item with id #" + str(order_item_id) + " doesn't exist"
+            
+    else:
+        msg = 'Input error'
+
+    return render_template('layouts/default.html',
+                            content=render_template( 'pages/create_order.html', form=form, msg=msg, menu=menu_items) )
+                        
 
 # App main route + generic routing
 @app.route('/', defaults={'path': 'index.html'})

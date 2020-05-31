@@ -1,8 +1,13 @@
 # -*- encoding: utf-8 -*-
+
+# This is the collection of data access object (DAO) classes
+
 """
 License: MIT
 Copyright (c) 2019 - present AppSeed.us
 """
+
+
 
 from app         import db
 from flask_login import UserMixin
@@ -33,10 +38,12 @@ class User(UserMixin, db.Model):
 
 # This table is a helper table to facilitate many to many relationship
 order_lines = db.Table('order_lines',
-    db.Column('order_id', db.Integer, db.ForeignKey('order.id'), primary_key=True),
-    db.Column('order_item_id', db.Integer, db.ForeignKey('menu_item.id'), primary_key=True)
+    db.Column('id', db.Integer, primary_key=True),
+    db.Column('order_id', db.Integer, db.ForeignKey('order.id')),
+    db.Column('order_item_id', db.Integer, db.ForeignKey('menu_item.id'))
 )
 
+# This is the menu item DAO
 class MenuItem(db.Model):
     __tablename__ = 'menu_item'
     id = db.Column(db.Integer, primary_key=True)
@@ -56,13 +63,15 @@ class MenuItem(db.Model):
         # commit change and save the object
         db.session.commit( )
         return self 
-                
+
+# This is the order DAO                
 class Order(db.Model):
     __tablename__ = 'order'
     id = db.Column(db.Integer, primary_key=True)
     table_number = db.Column(db.Integer)
-    #order_items = db.relationship('MenuItem', secondary='order_lines', lazy='subquery',backref=db.backref('orders', lazy=True))
+    order_status= db.Column(db.Boolean)
     order_items = db.relationship("MenuItem", secondary=order_lines)
+    total = db.Column(db.Integer)
     
     def __init__(self,table_number):
         self.table_number = table_number
@@ -78,8 +87,19 @@ class Order(db.Model):
             total+=float(item.price)
         total=round(total,2)
         total=format(total,'.2f')
+        self.total=total
         return(str(total))
 
+    def save(self):
+        db.session.add ( self )
+        # commit change and save the object
+        db.session.commit( )
+        return self 
+
+    def update(self):
+        # commit change and save the object
+        db.session.commit( )
+        return self 
 
 
 

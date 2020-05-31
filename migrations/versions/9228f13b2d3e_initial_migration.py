@@ -1,8 +1,8 @@
 """initial migration
 
-Revision ID: 249a5e322e71
+Revision ID: 9228f13b2d3e
 Revises: 
-Create Date: 2020-05-28 20:32:08.116252
+Create Date: 2020-05-30 20:44:44.235464
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '249a5e322e71'
+revision = '9228f13b2d3e'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -30,6 +30,8 @@ def upgrade():
     op.create_table('order',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('table_number', sa.Integer(), nullable=True),
+    sa.Column('order_status', sa.Boolean(), nullable=True),
+    sa.Column('total', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('user',
@@ -42,11 +44,12 @@ def upgrade():
     sa.UniqueConstraint('user')
     )
     op.create_table('order_lines',
-    sa.Column('order_id', sa.Integer(), nullable=False),
-    sa.Column('order_item_id', sa.Integer(), nullable=False),
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('order_id', sa.Integer(), nullable=True),
+    sa.Column('order_item_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['order_id'], ['order.id'], ),
     sa.ForeignKeyConstraint(['order_item_id'], ['menu_item.id'], ),
-    sa.PrimaryKeyConstraint('order_id', 'order_item_id')
+    sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
 
