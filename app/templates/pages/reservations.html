@@ -41,13 +41,13 @@
                 <thead class="thead-dark">
                   <tr>
                     <th scope="col">Name</th>
-                    <th scope="col">Description</th>
-                    <th scope="col">Price</th>
-                    <th scope="col"></th>
+                    <th scope="col">Contact Number</th>
+                    <th scope="col">Party Size</th>
+                    <th scope="col">Reservation Time</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {% for menu_item in menu %}
+                  {% for reservation in reservations %}
                   <tr>
                     <th scope="row">
                       <div class="media align-items-center">
@@ -55,18 +55,19 @@
                           <img alt="Image placeholder" src="/static/assets/img/theme/bootstrap.jpg">
                         </a>
                         <div class="media-body">
-                          <span class="mb-0 text-sm">{{menu_item.name}}</span>
+                          <span class="mb-0 text-sm">{{reservation.reservation_name}}</span>
                         </div>
                       </div>
                     </th>
                     <td>
-                      {{menu_item.description}}
+                      {{reservation.contact_number}}
                     </td>
                     <td>
-                        ${{menu_item.price}}
+                        {{reservation.party_size}}
                     </td>
                     <td>
-                      
+                      {{reservation.reservation_time}}
+
                     </td>
                   </tr>
                   {% endfor %}

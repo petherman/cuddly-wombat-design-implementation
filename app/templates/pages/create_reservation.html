@@ -4,7 +4,7 @@
   <nav class="navbar navbar-top navbar-expand-md navbar-dark" id="navbar-main">
     <div class="container-fluid">
       <!-- Brand -->
-      <h1 class="h4 mb-0 text-white text-uppercase d-none d-lg-inline-block" >Add Menu Item</h1>
+      <h1 class="h4 mb-0 text-white text-uppercase d-none d-lg-inline-block" >Create Reservation</h1>
       <!-- Form -->
       <form class="navbar-search navbar-search-dark form-inline mr-3 d-none d-md-flex ml-lg-auto">
         <div class="form-group mb-0">
@@ -48,26 +48,33 @@
           <div class="card-body bg-default">
             <form class="bg-default" role="form" method="post" action="">
               
-              {{ form.hidden_tag() }}
+              {{ form.csrf_token }}
               
               <div class="form-group">
-                <label for="example-text-input" class="text-white mb-0">Item Name</label>
-                {{ form.name(placeholder="Name",class="form-control") }}
+                <label for="example-text-input" class="text-white mb-0">Reservation name</label>
+                {{ form.reservation_name(placeholder="Name",class="form-control") }}
               </div>
+              
               <div class="form-group">
-                <label for="example-text-input" class="text-white mb-0">Item Description</label>
-                {{ form.description(placeholder="replace me",class="form-control") }}
+                <label for="example-text-input" class="text-white mb-0">Contact Number</label>
+                {{ form.reservation_contact_number(placeholder="Mobile number",class="form-control") }}
               </div>
+              
               <div class="form-group">
-                <label for="example-text-input" class="text-white mb-0">Price</label>
-                <div class="row">
-                  <h3 class="text-white mb-0">$</h3>
-                  <div class="col col-lg-2"><span>{{ form.startprice(placeholder="0",class="form-control") }}</span></div>
-                  <div class="col col-lg-2"><span>{{ form.endprice(placeholder="00",class="form-control") }}</span></div>
-                </div>
+                <label for="example-text-input" class="text-white mb-0">Party Size</label>
+                {{ form.reservation_party_size(placeholder="Number of people",class="form-control") }}
               </div>
+              
               <div class="form-group">
-                <button type="submit" class="btn btn-primary">Add Item</button>
+                <label for="example-datetime-local-input" class="text-white mb-0">Time of reservation</label>
+                {{ form.reservation_date(class="form-control",  type="date") }}
+                
+                {{ form.reservation_time(class="form-control",  type="time") }}
+
+              </div>
+
+              <div class="form-group">
+                <button type="submit" class="btn btn-primary">Create Reservation</button>
               </div>
             </form>
           </div>
