@@ -115,12 +115,12 @@ def login():
 
 
 # View Menu
-@app.route('/menu.html')
+@app.route('/index.html')
 def show_menu():
     
     menu = MenuItem.query.all()
     return render_template('layouts/default.html',
-                            content=render_template( 'pages/menu.html', menu=menu) )
+                            content=render_template( 'pages/index.html', menu=menu) )
 
 # View Current Orders
 @app.route('/current_orders.html', methods=['GET', 'POST'])
