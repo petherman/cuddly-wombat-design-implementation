@@ -14,13 +14,12 @@ from werkzeug.exceptions import HTTPException, NotFound, abort
 
 # App modules
 from app        import app, lm, db, bc
-from app.models import User, MenuItem, Order, OrderedItem
-from app.forms  import LoginForm, RegisterForm, AddMenuItemForm, BasicOrderForm, HiddenOrderID
+from app.models import User, MenuItem, Order, OrderedItem, Reservation
+from app.forms  import LoginForm, RegisterForm, AddMenuItemForm, BasicOrderForm, HiddenOrderID, ReservationForm
+from app.report import *
 
 # Sqlalchemy
-from sqlalchemy import desc
-
-
+from sqlalchemy import desc, exc
 
 # provide login manager with load_user callback
 @lm.user_loader
@@ -120,8 +119,6 @@ def login():
 def show_menu():
     
     menu = MenuItem.query.all()
-    for item in menu:
-        print(item.name)
     return render_template('layouts/default.html',
                             content=render_template( 'pages/menu.html', menu=menu) )
 
@@ -246,7 +243,7 @@ def create_order():
                 if currentOrder.order_status:
                     # Adds item to order
                     for x in range(item_amount):
-                        newItem = OrderedItem(item.name, item.description, item.category, item.price)
+                        newItem = OrderedItem(item.id, item.name, item.description, item.category, item.price)
                         newItem.save()
                         currentOrder.order_items.append(newItem)
                     currentOrder.calc_total()
@@ -263,7 +260,7 @@ def create_order():
                 newOrder.order_status = True
                 for x in range(item_amount):
                     # Adds item to order
-                    newItem = OrderedItem(item.name, item.description, item.category, item.price)
+                    newItem = OrderedItem(item.id, item.name, item.description, item.category, item.price)
                     newItem.save()
                     newOrder.order_items.append(newItem)
                 newOrder.calc_total()    
@@ -282,7 +279,71 @@ def create_order():
 
     return render_template('layouts/default.html',
                             content=render_template( 'pages/create_order.html', form=form, msg=msg, menu=menu_items) )
-                        
+        
+
+# Create reservations
+@app.route('/create_reservation.html', methods=['GET', 'POST'])
+def create_reservation():
+    
+    # declare the menu item Form
+    form = ReservationForm(request.form)
+
+    msg = None
+
+    if request.method == 'GET':
+        return render_template('layouts/default.html',
+                                content=render_template( 'pages/create_reservation.html', form=form, msg=msg) )
+                                
+    # check if both http method is POST and form is valid on submit
+    if form.validate_on_submit():
+        
+        reservation_name = request.form.get('reservation_name', '', type=str)
+        reservation_contact_number = request.form.get('reservation_contact_number', '', type=str)
+        reservation_party_size = request.form.get('reservation_party_size', '', type=int)
+        reservation_date = request.form.get('reservation_date', '')
+        reservation_time = request.form.get('reservation_time', '')
+
+        mytime = datetime.strptime(reservation_time,'%H:%M').time()
+        mydate = datetime.strptime(reservation_date,'%Y-%m-%d').date()
+        mydatetime = datetime.combine(mydate, mytime)
+        
+        print(mydatetime)
+        
+    
+        reservation = Reservation(reservation_name, reservation_contact_number, reservation_party_size, mydatetime)
+        try:
+            reservation.save()
+            msg = 'Reservation created'
+        except exc.SQLAlchemyError:
+            msg = 'Reservation has already been created'
+    else:
+        msg = 'Input error'
+        app.logger.debug(form.errors)
+
+
+    return render_template('layouts/default.html',
+                            content=render_template( 'pages/create_reservation.html', form=form, msg=msg) )
+                            
+
+# View Menu
+@app.route('/reservations.html')
+def view_reservations():
+    
+    reservations = Reservation.query.all()
+    return render_template('layouts/default.html',
+                            content=render_template( 'pages/reservations.html', reservations=reservations) )                
+
+# Reporting
+@app.route('/reporting.html')
+def view_reports():
+    
+    orders = Order.query.all()
+    reservations = Reservation.query.all()
+    
+    report = Report(orders, reservations)
+    
+    return render_template('layouts/default.html',
+                            content=render_template( 'pages/reporting.html', report=report) )    
 
 # App main route + generic routing
 @app.route('/', defaults={'path': 'index.html'})

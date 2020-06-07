@@ -118,12 +118,14 @@ class OrderedItem(db.Model):
 # This is the menu item DAO
     __tablename__ = 'ordered_item'
     id = db.Column(db.Integer, primary_key=True)
+    ordered_item_id = db.Column(db.Integer)     
     name = db.Column(db.String(64))
     description = db.Column(db.String(250))
     category = db.Column(db.String(64))
     price = db.Column(db.String(5))
 
-    def __init__(self,name,description,category,price):
+    def __init__(self,ordered_item_id,name,description,category,price):
+        self.ordered_item_id = ordered_item_id
         self.name = name
         self.description = description
         self.category = category
@@ -134,6 +136,25 @@ class OrderedItem(db.Model):
         # commit change and save the object
         db.session.commit( )
         return self 
+
+class Reservation(db.Model):
+    reservation_name = db.Column(db.String(64), primary_key=True)
+    contact_number = db.Column(db.String(64), primary_key=True)
+    party_size = db.Column(db.Integer, primary_key=True)
+    reservation_time = db.Column(db.DateTime, primary_key=True)
+    
+    def __init__(self, reservation_name, contact_number, party_size, reservation_time):
+        self.reservation_name = reservation_name
+        self.contact_number = contact_number
+        self.party_size = party_size
+        self.reservation_time = reservation_time
+
+    def save(self):
+        db.session.add ( self )
+        # commit change and save the object
+        db.session.commit( )
+        return self         
+    
 
 
 
